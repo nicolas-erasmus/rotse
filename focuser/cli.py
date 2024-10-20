@@ -18,31 +18,34 @@ class ActuatorControlTool:
         return (units / 1023) * self.stroke
 
     def set_accuracy(self):
-        value = int(input("Enter accuracy in mm: "))
+        value = float(input("Enter accuracy in mm (e.g., 0.1): "))  # Use float for decimal values
         units = self.mm_to_units(value)
         self.actuator.set_accuracy(units)
         print(f"Accuracy set to {value} mm")
 
     def set_retract_limit(self):
-        value = int(input("Enter retract limit in mm: "))
+        value = float(input("Enter retract limit in mm: "))  # Allow non-integer inputs
         units = self.mm_to_units(value)
         self.actuator.set_retract_limit(units)
         print(f"Retract limit set to {value} mm")
 
     def set_extend_limit(self):
-        value = int(input("Enter extend limit in mm: "))
+        value = float(input("Enter extend limit in mm: "))  # Allow non-integer inputs
         units = self.mm_to_units(value)
         self.actuator.set_extend_limit(units)
         print(f"Extend limit set to {value} mm")
 
     def set_speed(self):
-        value = int(input("Enter speed in mm/s: "))
+        value = float(input("Enter speed in mm/s (max 10 mm/s): "))  # Allow non-integer inputs
+        if value > 10.0:
+            print("Speed cannot exceed 10 mm/s. Setting speed to 10 mm/s.")
+            value = 10.0
         units = self.mm_to_units(value)
         self.actuator.set_speed(units)
         print(f"Speed set to {value} mm/s")
 
     def set_position(self):
-        value = int(input("Enter position in mm: "))
+        value = float(input("Enter position in mm: "))  # Allow non-integer inputs
         units = self.mm_to_units(value)
         self.actuator.set_position(units)
         print(f"Position set to {value} mm")
@@ -57,20 +60,20 @@ class ActuatorControlTool:
                 if current_position < 0:
                     current_position = 0
                 self.actuator.set_position(current_position)
-                time.sleep(0.01)
+                time.sleep(0.1)
 
             elif keyboard.is_pressed('right'):
                 current_position += self.mm_to_units(0.05)  # Extend by 0.1mm
                 if current_position > self.mm_to_units(self.stroke):
                     current_position = self.mm_to_units(self.stroke)
                 self.actuator.set_position(current_position)
-                time.sleep(0.01)
+                time.sleep(0.1)
 
             elif keyboard.is_pressed('q'):
                 print("Exiting continuous control.")
                 break
 
-            time.sleep(0.01)
+            time.sleep(0.1)
 
     def menu(self):
         while True:
