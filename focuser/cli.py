@@ -49,6 +49,10 @@ class ActuatorControlTool:
         units = self.mm_to_units(value)
         self.actuator.set_position(units)
         print(f"Position set to {value} mm")
+        
+    def show_position(self):
+        current_position = self.actuator.get_feedback()
+        print(f"Current position: {self.units_to_mm(current_position):.2f} mm")    
 
     def continuous_control(self):
         print("Press left arrow to retract and right arrow to extend. Press 'q' to quit.")
@@ -83,7 +87,8 @@ class ActuatorControlTool:
             print("3. Set extend limit")
             print("4. Set speed")
             print("5. Move to specific position")
-            print("6. Continuous control (Use arrow keys)")
+            print("6. Show current position")  # New menu item
+            print("7. Continuous control (Use arrow keys)") 
             print("0. Exit")
 
             choice = input("Select an option: ")
@@ -99,7 +104,9 @@ class ActuatorControlTool:
             elif choice == '5':
                 self.set_position()
             elif choice == '6':
-                self.continuous_control()
+                self.show_position()
+            elif choice == '7':
+                self.continuous_control() 
             elif choice == '0':
                 print("Exiting...")
                 break
