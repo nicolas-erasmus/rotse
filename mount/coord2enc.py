@@ -103,17 +103,17 @@ if __name__ == "__main__":
                 [0.010122417, 0.0045194345, 0.99993855]
             ],  # From matrix.mat
         rarange=[0, 360],    # Ranges for RA (can be customized)
-        poleoff=0.5,         # Example pole offset (might need adjustment)
-        deg2enc=[1000, 1000],  # Example encoder ticks per degree (dummy values)
-        zeropt=[0, 0],       # Zero point offsets (adjust based on your setup)
-        ptg_offset=[10, 10]  # Pointing offsets (adjust as needed)
+        poleoff=0.0,         # Example pole offset (might need adjustment)
+        deg2enc=[24382, 1000],  # Example encoder ticks per degree (dummy values)
+        zeropt=[2216332, -700044],       # Zero point offsets (adjust based on your setup)
+        ptg_offset=[2384300, 232900]  # Pointing offsets (adjust as needed)
     )
 
     # Example RA and Dec (in degrees) and observation time
-    ra = 10.684  # Example RA in hours (this is about the RA of Andromeda Galaxy)
-    dec = 41.269  # Example Dec in degrees
-    observation_time = "2024-10-21T22:00:00"  # Example observation time (UTC)
-
+    ra = 345.0445833  # Example RA in hours (this is about the RA of Andromeda Galaxy)
+    dec = -8.7247500  # Example Dec in degrees
+    observation_time = Time.now()#"2024-10-21T22:00:00"  # Example observation time (UTC)
+    print(observation_time)
     # Convert RA, Dec to encoder positions
     enc_ra, enc_dec = ra_dec_to_enc(ra, dec, cfg, observation_time)
 
