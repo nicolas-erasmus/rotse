@@ -97,12 +97,16 @@ if __name__ == "__main__":
         latitude=-23.272951, #rotse latitude from google maps
         longitude=16.502814, #rotse longitude from google maps
         elevation=1800,  #altitude form HESS wikipedia
-        coomat=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],  # Identity matrix for simplicity
-        rarange=[0, 360],
-        poleoff=0.5,
-        deg2enc=[1000, 1000],  # Encoder ticks per degree (dummy values)
-        zeropt=[0, 0],         # Zero point offsets
-        ptg_offset=[10, 10]    # Pointing offsets
+        coomat=[
+                [0.017560266, -0.99983637, 0.0043412095],
+                [0.99979455, 0.017515243, -0.010200123],
+                [0.010122417, 0.0045194345, 0.99993855]
+            ],  # From matrix.mat
+        rarange=[0, 360],    # Ranges for RA (can be customized)
+        poleoff=0.5,         # Example pole offset (might need adjustment)
+        deg2enc=[1000, 1000],  # Example encoder ticks per degree (dummy values)
+        zeropt=[0, 0],       # Zero point offsets (adjust based on your setup)
+        ptg_offset=[10, 10]  # Pointing offsets (adjust as needed)
     )
 
     # Example RA and Dec (in degrees) and observation time
