@@ -1,0 +1,19 @@
+# Focus model data file
+#
+# There can be up to 20 fit terms, with different polynomial degrees of
+#  elevation "e" (in degrees), temperature "t" (in degrees fahrenheit)
+#  and azimuth "a" (in degrees).
+# The constant offset can be denoted with "1".
+#
+# Example:
+# term	1	3.50    -- constant offset
+# term  eet     0.00003 -- temperature*(elevation^2)
+#
+
+term	1	3.50
+term	e	0.0
+term	ee	0.0
+term	t	0.0
+term	et	0.0
+term	eet	0.0
+

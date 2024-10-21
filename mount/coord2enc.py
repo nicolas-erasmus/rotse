@@ -1,6 +1,6 @@
 # Purpose: Convert RA and DEC to encoder values for ROTSE
 # Converted to python using original ROTSE c-code written by Don Smith &  E. Rykoff
-# Created: 21 Oct 2024 mostly by ChatGPT-4-turbo, guided by, modified, and tweaked by Nic Erasmus (SAAO)
+# Created: 21 Oct 2024 mostly by ChatGPT-4-turbo: guided by, modified, and tweaked by Nic Erasmus (SAAO)
 
 import numpy as np
 from astropy.coordinates import SkyCoord, EarthLocation
