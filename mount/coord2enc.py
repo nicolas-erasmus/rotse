@@ -83,39 +83,45 @@ def ra_dec_to_enc(ra, dec, cfg, observation_time):
     
     # Get the Local Sidereal Time (LST) at the observation time
     time = Time(observation_time)
-    lst = time.sidereal_time('mean', longitude=cfg.longitude)
+    lst = time.sidereal_time('mean', longitude=cfg.longitude).deg
+    print(f"LST = {lst}")
 
     # Convert RA to HA
-    ha = ra_to_ha(Angle(ra, unit=u.hourangle), lst)
+    ha = lst-ra
+    print(f"HA = {ha}")
 
     # Call the apply_matrix function to compute encoder positions
-    return apply_matrix(ha.rad, np.radians(dec), cfg)
+    return apply_matrix(np.radians(ha), np.radians(dec), cfg)
 
 # Example usage with dummy configuration
 if __name__ == "__main__":
     # Example mount configuration with made-up values
     cfg = MountConfig(
-        latitude=-23.272951, #rotse latitude from google maps
-        longitude=16.502814, #rotse longitude from google maps
-        elevation=1800,  #altitude form HESS wikipedia
+        latitude=-23.272951,  # ROTSE latitude from Google Maps
+        longitude=16.502814,  # ROTSE longitude from Google Maps
+        elevation=1800,       # Altitude from HESS Wikipedia
         coomat=[
-                [0.017560266, -0.99983637, 0.0043412095],
-                [0.99979455, 0.017515243, -0.010200123],
-                [0.010122417, 0.0045194345, 0.99993855]
-            ],  # From matrix.mat
-        rarange=[-185.0, 0.0],  # From schierd.conf, not sure where this is needed yet
-        decrange=[0.0, 240.0],  # From schierd.conf, not sure where this is needed yet
-        poleoff=0.0,            # Example pole offset (might need adjustment)
-        deg2enc=[24382, 19395], # From schierd.conf
-        zeropt=[0, 0],          # Zero point offsets (adjust based on your setup)
-        ptg_offset=[0, 0]       # Pointing offsets (adjust as needed)
+            [0.017560266, -0.99983637, 0.0043412095],
+            [0.99979455, 0.017515243, -0.010200123],
+            [0.010122417, 0.0045194345, 0.99993855]
+        ],  # Pointing matrix from matrix.mat
+        rarange=[-185.0, 0.0],  # RA range from schierd.conf
+        decrange=[0.0, 240.0],  # Dec range from schierd.conf
+        poleoff=0.0,            # Pole offset (adjust if necessary)
+        deg2enc=[24382, 19395],  # Encoder counts per degree from schierd.conf and the GUI
+        zeropt=[2176648.0, -3662179.0],  # Updated zero point from the "Home Position" in the GUI
+        ptg_offset=[2384300.0, 232900.0]  # Pointing offsets from GUI
     )
 
-    # Example RA and Dec (in degrees) and observation time
-    ra = 345.0445833  # Example RA in hours (this is about the RA of Andromeda Galaxy)
-    dec = -8.7247500  # Example Dec in degrees
     observation_time = Time.now()#"2024-10-21T22:00:00"  # Example observation time (UTC)
     print(observation_time)
+    
+    
+    # Example RA and Dec (in degrees) and observation time
+    ra = observation_time.sidereal_time('mean', longitude=cfg.longitude).deg #345.0445833  # Example RA in hours (this is about the RA of Andromeda Galaxy)
+    dec = -23.272951  # Example Dec in degrees
+    print(f"RA = {ra}, Dec = {dec}")
+    
     # Convert RA, Dec to encoder positions
     enc_ra, enc_dec = ra_dec_to_enc(ra, dec, cfg, observation_time)
 
