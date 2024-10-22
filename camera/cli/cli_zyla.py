@@ -106,6 +106,16 @@ def capture_image(andor_driver, zyla_camera, window, binning, exposure_time, coo
     # plt.savefig('captured_image.png')
     # print("Image saved as 'captured_image.png'.")
 
+# Function for continuous video mode
+def video_mode(andor_driver, zyla_camera, window, binning, exposure_time, cooling):
+    try:
+        print("Entering video mode. Press Ctrl+C to stop.")
+        while True:
+            capture_image(andor_driver, zyla_camera, window, binning, exposure_time, cooling)
+            time.sleep(0.1)  # Short pause between frames for continuous capture
+    except KeyboardInterrupt:
+        print("Video mode stopped.")
+
 # Main menu
 def main_menu(andor_driver, zyla_camera):
     window = (0, 0, 1000, 1000)
@@ -121,7 +131,8 @@ def main_menu(andor_driver, zyla_camera):
         print("4. Set Cooling (0 = Off, 1 = On)")
         print("5. Capture Image")
         print("6. Show Current Settings")
-        print("7. Exit")
+        print("7. Start Video Mode")
+        print("8. Exit")
         
         choice = input("Enter your choice: ")
 
@@ -142,6 +153,8 @@ def main_menu(andor_driver, zyla_camera):
         elif choice == "6":
             print_all(andor_driver, zyla_camera, cooling, exposure_time)
         elif choice == "7":
+            video_mode(andor_driver, zyla_camera, window, binning, exposure_time, cooling)
+        elif choice == "8":
             print("Exiting...")
             andor_driver.close(zyla_camera)
             break
