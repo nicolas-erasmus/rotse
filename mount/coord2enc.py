@@ -11,12 +11,13 @@ import logging
 
 # Configuration structure, which would hold necessary parameters
 class MountConfig:
-    def __init__(self, latitude, longitude, elevation, coomat, rarange, poleoff, deg2enc, zeropt, ptg_offset):
+    def __init__(self, latitude, longitude, elevation, coomat, rarange, decrange, poleoff, deg2enc, zeropt, ptg_offset):
         self.latitude = latitude
         self.longitude = longitude
         self.elevation = elevation
         self.coomat = np.array(coomat)
         self.rarange = rarange
+        self.decrange = decrange
         self.poleoff = poleoff
         self.deg2enc = deg2enc
         self.zeropt = zeropt
@@ -102,11 +103,12 @@ if __name__ == "__main__":
                 [0.99979455, 0.017515243, -0.010200123],
                 [0.010122417, 0.0045194345, 0.99993855]
             ],  # From matrix.mat
-        rarange=[0, 360],    # Ranges for RA (can be customized)
-        poleoff=0.0,         # Example pole offset (might need adjustment)
-        deg2enc=[24382, 1000],  # Example encoder ticks per degree (dummy values)
-        zeropt=[2216332, -700044],       # Zero point offsets (adjust based on your setup)
-        ptg_offset=[2384300, 232900]  # Pointing offsets (adjust as needed)
+        rarange=[-185.0, 0.0],  # From schierd.conf, not sure where this is needed yet
+        decrange=[0.0, 240.0],  # From schierd.conf, not sure where this is needed yet
+        poleoff=0.0,            # Example pole offset (might need adjustment)
+        deg2enc=[24382, 19395], # From schierd.conf
+        zeropt=[0, 0],          # Zero point offsets (adjust based on your setup)
+        ptg_offset=[0, 0]       # Pointing offsets (adjust as needed)
     )
 
     # Example RA and Dec (in degrees) and observation time
