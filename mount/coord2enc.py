@@ -108,9 +108,13 @@ if __name__ == "__main__":
         rarange=[-185.0, 0.0],  # RA range from schierd.conf
         decrange=[0.0, 240.0],  # Dec range from schierd.conf
         poleoff=0.0,            # Pole offset (adjust if necessary)
-        deg2enc=[24382, 19395],  # Encoder counts per degree from schierd.conf and the GUI
-        zeropt=[2176648.0, -3662179.0],  # Updated zero point from the "Home Position" in the GUI
+        deg2enc=[24382, 1000],  # Encoder "Gain" from GUI
+        # deg2enc=[24382, 19395],  # Encoder counts per degree from schierd.conf
+        # zeropt=[2176648.0, -3662179.0],  # Updated zero point from the "Home Position" in the GUI
+        zeropt=[0, 0], 
         ptg_offset=[2384300.0, 232900.0]  # Pointing offsets from GUI
+        # ptg_offset=[0, 0] 
+        
     )
 
     observation_time = Time.now()#"2024-10-21T22:00:00"  # Example observation time (UTC)
