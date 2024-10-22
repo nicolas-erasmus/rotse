@@ -2,9 +2,9 @@ from atcore import *  # import the python wrapper for the driver
 import math
 import numpy as np
 import time
-import matplotlib
+#import matplotlib
 from matplotlib import pyplot as plt
-matplotlib.use('Agg')  # Use non-interactive backend for headless environments
+#matplotlib.use('Agg')  # Use non-interactive backend for headless environments
 import astropy.visualization
 
 # Initialize Andor SDK3
@@ -52,7 +52,7 @@ def _binning_string_to_tuple(bin):
     return int(a), int(b)
 
 # Function to capture and display an image
-def capture_image(andor_driver, zyla_camera, window, binning, exposure_time, cooling):
+def capture_image(andor_driver, zyla_camera, window, binning, exposure_time, cooling, ax=None):
     width = int(math.floor(window[2]) / binning)
     height = int(math.floor(window[3]) / binning)
 
@@ -95,23 +95,36 @@ def capture_image(andor_driver, zyla_camera, window, binning, exposure_time, coo
 
     # Use astropy ZScaleInterval for scaling and display with matplotlib
     zscaler = astropy.visualization.ZScaleInterval()
-    fig, ax1 = plt.subplots(1, 1)
-    ax1.imshow(
-        formatted_img,
-        cmap="gray",
-        vmin=zscaler.get_limits(formatted_img)[0],
-        vmax=zscaler.get_limits(formatted_img)[1],
-    )
-    plt.show()
-    # plt.savefig('captured_image.png')
-    # print("Image saved as 'captured_image.png'.")
-
+    
+    if ax is not None:
+        ax.clear()  # Clear the previous image
+        ax.imshow(
+            formatted_img,
+            cmap="gray",
+            vmin=zscaler.get_limits(formatted_img)[0],
+            vmax=zscaler.get_limits(formatted_img)[1],
+        )
+        plt.draw()  # Update the figure with the new image
+    else:
+        fig, ax = plt.subplots(1, 1)
+        ax.imshow(
+            formatted_img,
+            cmap="gray",
+            vmin=zscaler.get_limits(formatted_img)[0],
+            vmax=zscaler.get_limits(formatted_img)[1],
+        )
+        plt.show()
+    
 # Function for continuous video mode
 def video_mode(andor_driver, zyla_camera, window, binning, exposure_time, cooling):
     try:
         print("Entering video mode. Press Ctrl+C to stop.")
+        
+        # Prepare to display the first image
+        fig, ax = plt.subplots(1, 1)
+        
         while True:
-            capture_image(andor_driver, zyla_camera, window, binning, exposure_time, cooling)
+            capture_image(andor_driver, zyla_camera, window, binning, exposure_time, cooling, ax)
             time.sleep(0.1)  # Short pause between frames for continuous capture
     except KeyboardInterrupt:
         print("Video mode stopped.")
@@ -130,8 +143,8 @@ def main_menu(andor_driver, zyla_camera):
         print("3. Set Exposure Time")
         print("4. Set Cooling (0 = Off, 1 = On)")
         print("5. Capture Image")
-        print("6. Show Current Settings")
-        print("7. Start Video Mode")
+        print("6. Start Video Mode")  
+        print("7. Show Current Settings")  
         print("8. Exit")
         
         choice = input("Enter your choice: ")
@@ -151,9 +164,9 @@ def main_menu(andor_driver, zyla_camera):
         elif choice == "5":
             capture_image(andor_driver, zyla_camera, window, binning, exposure_time, cooling)
         elif choice == "6":
-            print_all(andor_driver, zyla_camera, cooling, exposure_time)
-        elif choice == "7":
             video_mode(andor_driver, zyla_camera, window, binning, exposure_time, cooling)
+        elif choice == "7":
+            print_all(andor_driver, zyla_camera, cooling, exposure_time)
         elif choice == "8":
             print("Exiting...")
             andor_driver.close(zyla_camera)
