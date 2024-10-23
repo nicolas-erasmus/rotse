@@ -5,6 +5,7 @@ from coord2enc import ra_dec_to_encoders
 from send_commands import send_command
 from astropy.time import Time
 from astropy.coordinates import SkyCoord
+from astropy import units as u
 import time
 import serial  # Ensure to import the serial module
 
@@ -54,8 +55,8 @@ def display_menu():
         choice = input("Select an option (1-4): ")
 
         if choice == '1':
-            ra = input("Enter RA (in hexadecimal): ").replace(' ',":") #replace spaces with colons
-            dec = input("Enter Dec (in hexadecimal): ").replace(' ',":")#replace spaces with colons
+            ra = input("Enter RA (HH:MM:SS.ss): ").replace(' ',":") #replace spaces with colons
+            dec = input("Enter Dec (DD:MM:SS.ss): ").replace(' ',":")#replace spaces with colons
             print(f"RA = {ra}, Dec = {dec}")
             
             # Convert to degrees
