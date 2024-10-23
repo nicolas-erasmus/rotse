@@ -182,7 +182,7 @@ def save_image_as_fits(image_data,exp_start):
     
     # Save the image data to a FITS file
     hdu = fits.PrimaryHDU(image_data)
-    hdu.header["DATE-OBS"] = exp_start
+    hdu.header["DATE-OBS"] = exp_start.isot
     hdu.writeto(fits_filename, overwrite=True)
     print(f"Image saved to {fits_filename}")
 
