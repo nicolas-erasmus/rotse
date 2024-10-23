@@ -12,6 +12,8 @@ import astropy.visualization
 import os
 from astropy.io import fits
 from datetime import datetime
+from astropy.time import Time
+
 
 # Initialize Andor SDK3
 def initialize_camera():
@@ -21,6 +23,15 @@ def initialize_camera():
     print(
         f'Connected to camera {andor_driver.get_string(zyla_camera, "CameraModel")} with serial number: {andor_driver.get_string(zyla_camera, "SerialNumber")}'
     )
+
+    # Set to 16-bit (low noise & high well capacity)
+    andor_driver.set_enum_string(zyla_camera, "SimplePreAmpGainControl", "16-bit (low noise & high well capacity)")
+    
+    # Set shutter mode to rolling
+    andor_driver.set_enum_string(zyla_camera, "ElectronicShutteringMode", "Rolling")
+    
+    # Set readout to 200 MHz
+    andor_driver.set_enum_string(zyla_camera, "PixelReadoutRate", "200 MHz")
 
     # Turn off cooling on initialization
     andor_driver.set_bool(zyla_camera, "SensorCooling", False)
@@ -79,7 +90,7 @@ def capture_image(andor_driver, zyla_camera, window, binning, exposure_time, coo
     andor_driver.queue_buffer(zyla_camera, buf.ctypes.data, imageSizeBytes)
 
     andor_driver.command(zyla_camera, "AcquisitionStart")
-
+    exp_start = Time.now()
     print(f"Exposing sensor for {exposure_time} seconds...")
     while True:
         time.sleep(0.1)
@@ -95,7 +106,7 @@ def capture_image(andor_driver, zyla_camera, window, binning, exposure_time, coo
     aoistride = andor_driver.get_int(zyla_camera, "AOIStride")
 
     np_arr = buf[0 : height * aoistride]
-    np_d = np_arr.view(dtype=np.uint16)
+    np_d = np_arr.view(dtype=np.float16)
     np_d = np_d.reshape(height, round(np_d.size / height))
     formatted_img = np_d[0:height, 0:width]
     
@@ -127,7 +138,7 @@ def capture_image(andor_driver, zyla_camera, window, binning, exposure_time, coo
 
     # Save the image as a FITS file only if save_image is True
     if save_image:
-        save_image_as_fits(formatted_img)
+        save_image_as_fits(formatted_img,exp_start)
 
 # Function for continuous video mode (no image saving)
 def video_mode(andor_driver, zyla_camera, window, binning, exposure_time, cooling):
@@ -147,7 +158,7 @@ def video_mode(andor_driver, zyla_camera, window, binning, exposure_time, coolin
         plt.ioff()  # Turn off interactive mode
 
 # Fix for filename incrementing issue
-def save_image_as_fits(image_data):
+def save_image_as_fits(image_data,exp_start):
     # Generate directory and file name based on current date
     date_str = datetime.now().strftime("%Y%m%d")
     base_dir = os.getcwd() + f"/data/{date_str}"
@@ -171,6 +182,7 @@ def save_image_as_fits(image_data):
     
     # Save the image data to a FITS file
     hdu = fits.PrimaryHDU(image_data)
+    hdu.header["DATE-OBS"] = exp_start
     hdu.writeto(fits_filename, overwrite=True)
     print(f"Image saved to {fits_filename}")
 
