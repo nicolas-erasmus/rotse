@@ -1,132 +1,61 @@
 # Purpose: Convert RA and DEC to encoder values for ROTSE
-# Converted to python using original ROTSE c-code written by Don Smith &  E. Rykoff
-# Created: 21 Oct 2024 mostly by ChatGPT-4-turbo: guided by, modified, and tweaked by Nic Erasmus (SAAO)
+# Created: 22 Oct 2024 mostly by ChatGPT-4-turbo: guided by, modified, and tweaked by Nic Erasmus (SAAO)
 
 import numpy as np
-from astropy.coordinates import SkyCoord, EarthLocation
-from astropy.coordinates import Angle
-from astropy import units as u
+from scipy.interpolate import LinearNDInterpolator
 from astropy.time import Time
-import logging
+from astropy.coordinates import EarthLocation, AltAz, SkyCoord
+from astropy import units as u
 
-# Configuration structure, which would hold necessary parameters
-class MountConfig:
-    def __init__(self, latitude, longitude, elevation, coomat, rarange, decrange, poleoff, deg2enc, zeropt, ptg_offset):
-        self.latitude = latitude
-        self.longitude = longitude
-        self.elevation = elevation
-        self.coomat = np.array(coomat)
-        self.rarange = rarange
-        self.decrange = decrange
-        self.poleoff = poleoff
-        self.deg2enc = deg2enc
-        self.zeropt = zeropt
-        self.ptg_offset = ptg_offset
+# ROTSE location:
+latitude = -23.272951  # ROTSE latitude from Google Maps
+longitude = 16.502814  # ROTSE longitude from Google Maps
+elevation = 1800       # Altitude from HESS Wikipedia
 
-# Helper function to convert RA to HA
-def ra_to_ha(ra, lst):
-    ha = (lst - ra).wrap_at(24 * u.hour)
-    return ha
+# Calibration points: [(HA, Dec), Encoder_X, Encoder_Y] in degrees
+calibration_data = [
+    ((-90.0, latitude + 70.0), 2109813.0, 1002289.0), 
+    ((-90.0, latitude - 90.0), 2109813.0, -2013804.0),
+    ((90.0, latitude + 70.0), -2248619.0, 1002289.0),
+    ((90.0, latitude - 90.0), -2248619.0, -2013804.0)
+]
 
-# Helper function to convert HA, Dec to Cartesian coordinates
-def ha_dec_to_xyz(ha, dec):
-    cos_dec = np.cos(dec)
-    x = np.cos(ha) * cos_dec
-    y = np.sin(ha) * cos_dec
-    z = np.sin(dec)
-    return np.array([x, y, z])
+# Extract HA, Dec, and Encoder values for interpolation
+ha_dec_points = np.array([point[0] for point in calibration_data])
+encoder_x = np.array([point[1] for point in calibration_data])
+encoder_y = np.array([point[2] for point in calibration_data])
 
-# Helper function to convert Cartesian coordinates back to spherical (HA, Dec)
-def xyz_to_spherical(xyz):
-    x, y, z = xyz
-    r = np.sqrt(x**2 + y**2)
-    dec = np.arcsin(z)
-    ha = np.arccos(x / r) if y >= 0 else 2 * np.pi - np.arccos(x / r)
-    return ha, dec
+# Create interpolators for X and Y encoders
+encoder_x_interpolator = LinearNDInterpolator(ha_dec_points, encoder_x)
+encoder_y_interpolator = LinearNDInterpolator(ha_dec_points, encoder_y)
 
-# Function to apply the matrix and calculate encoder positions
-def apply_matrix(ha, dec, cfg):
-    logging.info("Applying pointing matrix...")
-
-    # Convert HA, Dec to XYZ vector
-    vector = ha_dec_to_xyz(ha, dec)
-
-    # Apply the rotation matrix from the configuration
-    rotated_vector = np.dot(cfg.coomat, vector)
-
-    # Convert back to spherical coordinates (HA, Dec)
-    ha_rotated, dec_rotated = xyz_to_spherical(rotated_vector)
-
-    # Convert to degrees
-    ha_rotated_deg = np.degrees(ha_rotated)
-    dec_rotated_deg = np.degrees(dec_rotated)
-
-    # Handle southern hemisphere if necessary
-    if cfg.latitude < 0:
-        ha_rotated_deg *= -1
-        dec_rotated_deg *= -1
-
-    # Apply offsets and adjust for pole offset
-    dec_rotated_deg -= cfg.poleoff
-
-    # Convert to encoder steps
-    enc_ra = int(ha_rotated_deg * cfg.deg2enc[0]) + cfg.zeropt[0] + cfg.ptg_offset[0]
-    enc_dec = int(dec_rotated_deg * cfg.deg2enc[1]) + cfg.zeropt[1] + cfg.ptg_offset[1]
-
-    logging.info(f"Encoder positions: RA = {enc_ra}, Dec = {enc_dec}")
-    return enc_ra, enc_dec
-
-# Function to calculate HA and Dec from RA, Dec and time/location
-def ra_dec_to_enc(ra, dec, cfg, observation_time):
-    # Set up the observatory location
-    location = EarthLocation(lat=cfg.latitude * u.deg, lon=cfg.longitude * u.deg, height=cfg.elevation * u.m)
-    
-    # Get the Local Sidereal Time (LST) at the observation time
-    time = Time(observation_time)
-    lst = time.sidereal_time('mean', longitude=cfg.longitude).deg
-    print(f"LST = {lst}")
-
-    # Convert RA to HA
-    ha = lst-ra
+def ra_dec_to_encoders(ra, dec, lst):
+    """Convert RA and Dec to encoder values"""
+    # Convert RA to HA (in degrees)
+    ha = lst - ra 
     print(f"HA = {ha}")
+    ha_dec = (ha, dec)
+    
+    # Interpolate encoder values
+    encoder_x_val = encoder_x_interpolator(ha_dec)
+    encoder_y_val = encoder_y_interpolator(ha_dec)
+    
+    return encoder_x_val, encoder_y_val
 
-    # Call the apply_matrix function to compute encoder positions
-    return apply_matrix(np.radians(ha), np.radians(dec), cfg)
-
-# Example usage with dummy configuration
+# Example usage
 if __name__ == "__main__":
-    # Example mount configuration with made-up values
-    cfg = MountConfig(
-        latitude=-23.272951,  # ROTSE latitude from Google Maps
-        longitude=16.502814,  # ROTSE longitude from Google Maps
-        elevation=1800,       # Altitude from HESS Wikipedia
-        coomat=[
-            [0.017560266, -0.99983637, 0.0043412095],
-            [0.99979455, 0.017515243, -0.010200123],
-            [0.010122417, 0.0045194345, 0.99993855]
-        ],  # Pointing matrix from matrix.mat
-        rarange=[-185.0, 0.0],  # RA range from schierd.conf
-        decrange=[0.0, 240.0],  # Dec range from schierd.conf
-        poleoff=0.0,            # Pole offset (adjust if necessary)
-        deg2enc=[24382, 1000],  # Encoder "Gain" from GUI
-        # deg2enc=[24382, 19395],  # Encoder counts per degree from schierd.conf
-        # zeropt=[2176648.0, -3662179.0],  # Updated zero point from the "Home Position" in the GUI
-        zeropt=[0, 0], 
-        ptg_offset=[2384300.0, 232900.0]  # Pointing offsets from GUI
-        # ptg_offset=[0, 0] 
-        
-    )
-
+    
     observation_time = Time.now()#"2024-10-21T22:00:00"  # Example observation time (UTC)
     print(observation_time)
     
+    lst = observation_time.sidereal_time('mean', longitude=longitude).deg #in degrees
+    print(f"LST = {lst}")
     
     # Example RA and Dec (in degrees) and observation time
-    ra = observation_time.sidereal_time('mean', longitude=cfg.longitude).deg #345.0445833  # Example RA in hours (this is about the RA of Andromeda Galaxy)
-    dec = -23.272951  # Example Dec in degrees
+    ra = lst #in degrees
+    dec = latitude #in degrees
     print(f"RA = {ra}, Dec = {dec}")
     
-    # Convert RA, Dec to encoder positions
-    enc_ra, enc_dec = ra_dec_to_enc(ra, dec, cfg, observation_time)
-
-    print(f"Encoder positions: RA = {enc_ra}, Dec = {enc_dec}")
+    
+    encoder_x_val, encoder_y_val = ra_dec_to_encoders(ra, dec, lst)
+    print(f"Encoder X: {encoder_x_val}, Encoder Y: {encoder_y_val}")
