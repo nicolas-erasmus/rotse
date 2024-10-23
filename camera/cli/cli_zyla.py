@@ -31,7 +31,7 @@ def initialize_camera():
     andor_driver.set_enum_string(zyla_camera, "ElectronicShutteringMode", "Rolling")
     
     # Set readout to 200 MHz
-    andor_driver.set_enum_string(zyla_camera, "PixelReadoutRate", "200 MHz")
+    andor_driver.set_enum_string(zyla_camera, "PixelReadoutRate", "280 MHz")
 
     # Turn off cooling on initialization
     andor_driver.set_bool(zyla_camera, "SensorCooling", False)
