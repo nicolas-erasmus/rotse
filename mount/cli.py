@@ -42,6 +42,10 @@ def halt_drives():
 
 def home_mount():
     """Home the mount (RA and Dec)."""
+    send_command(ser, f"$StopRA {encoder_x_val}")
+    time.sleep(0.1)  # Add 0.1s delay between commands
+    send_command(ser, f"$StopDec {encoder_y_val}")
+    time.sleep(0.1)  # Add 0.1s delay between commands
     send_command(ser, "$HomeRA")
     time.sleep(0.1)  # Add 0.1s delay between commands
     send_command(ser, "$HomeDec")
