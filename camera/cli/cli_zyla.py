@@ -1,3 +1,6 @@
+# Purpose: A little command line tool to control the Zyla camera
+# Created: 20 Oct 2024 by  ChatGPT-4-turbo using base code developed by Enzo Afonso (UCT/SAAO), modified and tweaked by Nic Erasmus (SAAO)
+
 from atcore import *  # import the python wrapper for the driver
 import math
 import numpy as np
@@ -120,14 +123,18 @@ def video_mode(andor_driver, zyla_camera, window, binning, exposure_time, coolin
     try:
         print("Entering video mode. Press Ctrl+C to stop.")
         
+        # Enable interactive mode for continuous updating
+        plt.ion()
+        
         # Prepare to display the first image
         fig, ax = plt.subplots(1, 1)
         
         while True:
             capture_image(andor_driver, zyla_camera, window, binning, exposure_time, cooling, ax)
-            time.sleep(0.1)  # Short pause between frames for continuous capture
+            plt.pause(0.1)  # Allow the plot to update in interactive mode
     except KeyboardInterrupt:
         print("Video mode stopped.")
+        plt.ioff()  # Turn off interactive mode after exiting video mode
 
 # Main menu
 def main_menu(andor_driver, zyla_camera):
