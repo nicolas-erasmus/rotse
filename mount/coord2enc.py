@@ -35,10 +35,10 @@ elevation = 1800       # Altitude from HESS Wikipedia
 # ]
 
 calibration_data = [
-    ((-70.528, 6.859), 1752867, 1227690), 
-    ((70.504, 6.859),  -1683431, 1227690),
-    ((-1.916, -84.399), 4526, -760272),
-    ((-1.916, 25.721), 4526, 1592783)
+    ((-47.450399016439576, -20.278), 1195510, 707781), 
+    ((-47.702140239141585, 12.104),  1195510, 1335993),
+    ((-32.05169058054409, 1.052), 816039, 1119519),
+    ((-59.83958205731879, 0.886), 1493334, 1119519)
 ]
 
 # Extract HA, Dec, and Encoder values for interpolation
@@ -66,7 +66,7 @@ def ra_dec_to_encoders(ra, dec, lst):
 # Example usage
 if __name__ == "__main__":
     
-    observation_time = Time.now()# Time("2024-10-23T20:00:50") # Example observation time (UTC)
+    observation_time = Time.now()# Time("2024-10-23T20:00:50")Time("2024-10-23T21:10:16")# # Example observation time (UTC)
     print(observation_time)
     
     lst = observation_time.sidereal_time('mean', longitude=longitude).deg #in degrees
