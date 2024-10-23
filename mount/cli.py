@@ -72,7 +72,7 @@ def display_menu():
             lst = observation_time.sidereal_time('mean', longitude=longitude)
             print(f"Local Sidereal Time: {lst}")
             
-            lst_in_deg = lst.deg
+            lst_in_deg = lst.deg.to_string()
             print(f"Local Sidereal Time in degrees: {lst_in_deg}")
             
             # Convert RA/Dec to encoder values
