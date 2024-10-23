@@ -14,10 +14,10 @@ elevation = 1800       # Altitude from HESS Wikipedia
 
 # Calibration points: [(HA, Dec), Encoder_X, Encoder_Y] in degrees
 calibration_data = [
-    ((-90.0, latitude + 70.0), 2109813.0, 1002289.0), 
-    ((-90.0, latitude - 90.0), 2109813.0, -2013804.0),
-    ((90.0, latitude + 70.0), -2248619.0, 1002289.0),
-    ((90.0, latitude - 90.0), -2248619.0, -2013804.0)
+    ((-90.0, latitude + 45.0), 2309696, 1442022), 
+    ((-90.0, latitude - 90.0), 2309696, -1195859),
+    ((90.0, latitude + 45.0), -2046480, 1442022),
+    ((90.0, latitude - 90.0), -2046480, -1195859)
 ]
 
 # Extract HA, Dec, and Encoder values for interpolation
