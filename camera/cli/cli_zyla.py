@@ -57,33 +57,8 @@ def _binning_string_to_tuple(bin):
     a, b = bin.split("x")
     return int(a), int(b)
 
-# Function to create directory structure and save the FITS file
-def save_image_as_fits(image_data):
-    # Generate directory and file name based on current date and time
-    date_str = datetime.now().strftime("%Y%m%d")
-    base_dir = os.getcwd()+f"/data/{date_str}"
-    if not os.path.exists(base_dir):
-        os.makedirs(base_dir)
-
-    # Find the next available file number (0001, 0002, etc.)
-    existing_files = sorted([f for f in os.listdir(base_dir) if f.startswith(f"rotse_{date_str}") and f.endswith(".fits")])
-    if existing_files:
-        last_file = existing_files[-1]
-        next_num = int(last_file.split('_')[-1].split('.')[0]) + 1
-    else:
-        next_num = 1
-    file_num = f"{next_num:04d}"
-
-    # File name for the new FITS file
-    fits_filename = f"{base_dir}/rotse_{date_str}.{file_num}.fits"
-    
-    # Save the image data to a FITS file
-    hdu = fits.PrimaryHDU(image_data)
-    hdu.writeto(fits_filename, overwrite=True)
-    print(f"Image saved to {fits_filename}")
-
-# Function to capture and display an image, then save it as a FITS file
-def capture_image(andor_driver, zyla_camera, window, binning, exposure_time, cooling, ax=None):
+# Function to capture and display an image, optionally save it as a FITS file
+def capture_image(andor_driver, zyla_camera, window, binning, exposure_time, cooling, ax=None, save_image=True):
     width = int(math.floor(window[2]) / binning)
     height = int(math.floor(window[3]) / binning)
 
@@ -120,15 +95,16 @@ def capture_image(andor_driver, zyla_camera, window, binning, exposure_time, coo
     aoistride = andor_driver.get_int(zyla_camera, "AOIStride")
 
     np_arr = buf[0 : height * aoistride]
-    print(np_arr)
     np_d = np_arr.view(dtype=np.uint16)
     np_d = np_d.reshape(height, round(np_d.size / height))
     formatted_img = np_d[0:height, 0:width]
-    print(formatted_img)
-
-    # Use astropy ZScaleInterval for scaling and display with matplotlib
-    zscaler = astropy.visualization.ZScaleInterval()
     
+    # Check if all pixels have the same value
+    if np.all(formatted_img == formatted_img[0, 0]):
+        print("Warning: All pixels have the same value. Check camera settings or data acquisition process.")
+
+    # Display the image using astropy ZScaleInterval
+    zscaler = astropy.visualization.ZScaleInterval()
     if ax is not None:
         ax.clear()  # Clear the previous image
         ax.imshow(
@@ -149,10 +125,11 @@ def capture_image(andor_driver, zyla_camera, window, binning, exposure_time, coo
         plt.show()
         plt.close(fig)  # Close the figure after display
 
-    # Save the image as a FITS file after display
-    save_image_as_fits(formatted_img)
+    # Save the image as a FITS file only if save_image is True
+    if save_image:
+        save_image_as_fits(formatted_img)
 
-# Function for continuous video mode
+# Function for continuous video mode (no image saving)
 def video_mode(andor_driver, zyla_camera, window, binning, exposure_time, cooling):
     try:
         print("Entering video mode. Press Ctrl+C to stop.")
@@ -161,13 +138,39 @@ def video_mode(andor_driver, zyla_camera, window, binning, exposure_time, coolin
         fig, ax = plt.subplots(1, 1)
         
         while True:
-            capture_image(andor_driver, zyla_camera, window, binning, exposure_time, cooling, ax)
+            capture_image(andor_driver, zyla_camera, window, binning, exposure_time, cooling, ax, save_image=False)
             plt.pause(0.1)  # Allow the plot to update in interactive mode
 
     except KeyboardInterrupt:
         print("Exiting video mode...")
         plt.close(fig)  # Ensure the figure is closed to avoid tkinter errors
         plt.ioff()  # Turn off interactive mode
+
+# Fix for filename incrementing issue
+def save_image_as_fits(image_data):
+    # Generate directory and file name based on current date
+    date_str = datetime.now().strftime("%Y%m%d")
+    base_dir = os.getcwd() + f"/data/{date_str}"
+    if not os.path.exists(base_dir):
+        os.makedirs(base_dir)
+
+    # Find the next available file number (0001, 0002, etc.)
+    existing_files = sorted([f for f in os.listdir(base_dir) if f.startswith(f"rotse_{date_str}") and f.endswith(".fits")])
+    if existing_files:
+        last_file = existing_files[-1]
+        next_num = int(last_file.split('_')[1].split('.')[0]) + 1  # Fixes the date duplication issue
+    else:
+        next_num = 1
+    file_num = f"{next_num:04d}"
+
+    # Correct the filename format
+    fits_filename = f"{base_dir}/rotse_{date_str}.{file_num}.fits"
+    
+    # Save the image data to a FITS file
+    hdu = fits.PrimaryHDU(image_data)
+    hdu.writeto(fits_filename, overwrite=True)
+    print(f"Image saved to {fits_filename}")
+
 
 # Main menu
 def main_menu(andor_driver, zyla_camera):
