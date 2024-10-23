@@ -120,9 +120,11 @@ def capture_image(andor_driver, zyla_camera, window, binning, exposure_time, coo
     aoistride = andor_driver.get_int(zyla_camera, "AOIStride")
 
     np_arr = buf[0 : height * aoistride]
+    print(np_arr)
     np_d = np_arr.view(dtype=np.uint16)
     np_d = np_d.reshape(height, round(np_d.size / height))
     formatted_img = np_d[0:height, 0:width]
+    print(formatted_img)
 
     # Use astropy ZScaleInterval for scaling and display with matplotlib
     zscaler = astropy.visualization.ZScaleInterval()
@@ -169,7 +171,7 @@ def video_mode(andor_driver, zyla_camera, window, binning, exposure_time, coolin
 
 # Main menu
 def main_menu(andor_driver, zyla_camera):
-    window = (0, 0, 1000, 1000)
+    window = (0, 0, 2560, 2160)
     binning = 1
     exposure_time = 0.5
     cooling = 0
