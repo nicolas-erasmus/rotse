@@ -4,6 +4,7 @@
 from coord2enc import ra_dec_to_encoders
 from send_commands import send_command
 from astropy.time import Time
+from astropy.coordinates import SkyCoord
 import time
 import serial  # Ensure to import the serial module
 
@@ -15,10 +16,6 @@ ser = serial.Serial(port='/dev/ttyS0',    # Use /dev/ttyS* for Linux, COM* for W
                     baudrate=9600,
                     timeout=1
                     )
-
-def hex_to_degrees(hex_value):
-    """Convert hexadecimal to degrees."""
-    return float.fromhex(hex_value)
 
 def goto_ra_dec(encoder_x_val, encoder_y_val):
     """Send commands to move to the given encoder positions."""
@@ -57,20 +54,28 @@ def display_menu():
         choice = input("Select an option (1-4): ")
 
         if choice == '1':
-            ra_hex = input("Enter RA (in hexadecimal): ")
-            dec_hex = input("Enter Dec (in hexadecimal): ")
-
-            # Convert hexadecimal to degrees
-            ra = hex_to_degrees(ra_hex)
-            dec = hex_to_degrees(dec_hex)
-            print(f"Converted RA = {ra} degrees, Dec = {dec} degrees")
+            ra = input("Enter RA (in hexadecimal): ").replace(' ',":") #replace spaces with colons
+            dec = input("Enter Dec (in hexadecimal): ").replace(' ',":")#replace spaces with colons
+            print(f"RA = {ra}, Dec = {dec}")
+            
+            # Convert to degrees
+            coords = SkyCoord(ra, dec,unit=(u.hourangle, u.deg))
+            ra_in_deg = coords.to_string().split()[0]
+            dec_in_deg = coords.to_string().split()[1]
+            print(f"RA_deg = {ra_in_deg}, Dec_deg = {dec_in_deg}")
+            
             
             # Get the current sidereal time (LST)
             observation_time = Time.now()
-            lst = observation_time.sidereal_time('mean', longitude=longitude).deg
+            print(f"Current time: {observation_time}")
+            lst = observation_time.sidereal_time('mean', longitude=longitude)
+            print(f"Local Sidereal Time: {lst}")
+            
+            lst_in_deg = lst.deg
+            print(f"Local Sidereal Time in degrees: {lst_in_deg}")
             
             # Convert RA/Dec to encoder values
-            encoder_x_val, encoder_y_val = ra_dec_to_encoders(ra, dec, lst)
+            encoder_x_val, encoder_y_val = ra_dec_to_encoders(ra_in_deg, dec_in_deg, lst)
             if encoder_x_val is not None and encoder_y_val is not None:
                 # Send goto RA/DEC commands
                 goto_ra_dec(encoder_x_val, encoder_y_val)
