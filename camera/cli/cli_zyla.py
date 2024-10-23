@@ -156,9 +156,12 @@ def save_image_as_fits(image_data):
 
     # Find the next available file number (0001, 0002, etc.)
     existing_files = sorted([f for f in os.listdir(base_dir) if f.startswith(f"rotse_{date_str}") and f.endswith(".fits")])
+    print(existing_files)
     if existing_files:
         last_file = existing_files[-1]
-        next_num = int(last_file.split('_')[1].split('.')[0]) + 1  # Fixes the date duplication issue
+        print(last_file)
+        next_num = int(last_file.split('.')[-2]) + 1  # Fixes the date duplication issue
+        print(next_num)
     else:
         next_num = 1
     file_num = f"{next_num:04d}"
