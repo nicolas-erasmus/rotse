@@ -106,7 +106,7 @@ def capture_image(andor_driver, zyla_camera, window, binning, exposure_time, coo
     aoistride = andor_driver.get_int(zyla_camera, "AOIStride")
 
     np_arr = buf[0 : height * aoistride]
-    np_d = np_arr.view(dtype=np.float16)
+    np_d = np_arr.view(dtype=np.uint16)
     np_d = np_d.reshape(height, round(np_d.size / height))
     formatted_img = np_d[0:height, 0:width]
     
