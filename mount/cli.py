@@ -20,6 +20,10 @@ ser = serial.Serial(port='/dev/ttyS0',    # Use /dev/ttyS* for Linux, COM* for W
 
 def goto_ra_dec(encoder_x_val, encoder_y_val):
     """Send commands to move to the given encoder positions."""
+    send_command(ser, f"$StopRA {encoder_x_val}")
+    time.sleep(0.1)  # Add 0.1s delay between commands
+    send_command(ser, f"$StopDec {encoder_y_val}")
+    time.sleep(0.1)  # Add 0.1s delay between commands
     send_command(ser, f"$PosRA {encoder_x_val}")
     time.sleep(0.1)  # Add 0.1s delay between commands
     send_command(ser, f"$PosDec {encoder_y_val}")
