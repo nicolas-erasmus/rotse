@@ -9,6 +9,9 @@ import time
 from matplotlib import pyplot as plt
 #matplotlib.use('Agg')  # Use non-interactive backend for headless environments
 import astropy.visualization
+import os
+from astropy.io import fits
+from datetime import datetime
 
 # Initialize Andor SDK3
 def initialize_camera():
@@ -54,7 +57,32 @@ def _binning_string_to_tuple(bin):
     a, b = bin.split("x")
     return int(a), int(b)
 
-# Function to capture and display an image
+# Function to create directory structure and save the FITS file
+def save_image_as_fits(image_data):
+    # Generate directory and file name based on current date and time
+    date_str = datetime.now().strftime("%Y%m%d")
+    base_dir = f"/data/{date_str}"
+    if not os.path.exists(base_dir):
+        os.makedirs(base_dir)
+
+    # Find the next available file number (0001, 0002, etc.)
+    existing_files = sorted([f for f in os.listdir(base_dir) if f.startswith(f"rotse_{date_str}") and f.endswith(".fits")])
+    if existing_files:
+        last_file = existing_files[-1]
+        next_num = int(last_file.split('_')[-1].split('.')[0]) + 1
+    else:
+        next_num = 1
+    file_num = f"{next_num:04d}"
+
+    # File name for the new FITS file
+    fits_filename = f"{base_dir}/rotse_{date_str}.{file_num}.fits"
+    
+    # Save the image data to a FITS file
+    hdu = fits.PrimaryHDU(image_data)
+    hdu.writeto(fits_filename, overwrite=True)
+    print(f"Image saved to {fits_filename}")
+
+# Function to capture and display an image, then save it as a FITS file
 def capture_image(andor_driver, zyla_camera, window, binning, exposure_time, cooling, ax=None):
     width = int(math.floor(window[2]) / binning)
     height = int(math.floor(window[3]) / binning)
@@ -117,24 +145,27 @@ def capture_image(andor_driver, zyla_camera, window, binning, exposure_time, coo
             vmax=zscaler.get_limits(formatted_img)[1],
         )
         plt.show()
-    
+        plt.close(fig)  # Close the figure after display
+
+    # Save the image as a FITS file after display
+    save_image_as_fits(formatted_img)
+
 # Function for continuous video mode
 def video_mode(andor_driver, zyla_camera, window, binning, exposure_time, cooling):
     try:
         print("Entering video mode. Press Ctrl+C to stop.")
         
-        # Enable interactive mode for continuous updating
-        plt.ion()
-        
-        # Prepare to display the first image
+        plt.ion()  # Enable interactive mode for continuous updating
         fig, ax = plt.subplots(1, 1)
         
         while True:
             capture_image(andor_driver, zyla_camera, window, binning, exposure_time, cooling, ax)
             plt.pause(0.1)  # Allow the plot to update in interactive mode
+
     except KeyboardInterrupt:
-        print("Video mode stopped.")
-        plt.ioff()  # Turn off interactive mode after exiting video mode
+        print("Exiting video mode...")
+        plt.close(fig)  # Ensure the figure is closed to avoid tkinter errors
+        plt.ioff()  # Turn off interactive mode
 
 # Main menu
 def main_menu(andor_driver, zyla_camera):
