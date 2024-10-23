@@ -13,11 +13,18 @@ longitude = 16.502814  # ROTSE longitude from Google Maps
 elevation = 1800       # Altitude from HESS Wikipedia
 
 # Calibration points: [(HA, Dec), Encoder_X, Encoder_Y] in degrees
+# calibration_data = [
+#     ((-90.0, latitude + 45.0), 2309696, 1442022),
+#     ((-90.0, latitude - 90.0), 2309696, -1195859),
+#     ((90.0, latitude + 45.0), -2046480, 1442022),
+#     ((90.0, latitude - 90.0), -2046480, -1195859)
+# ]
+
 calibration_data = [
-    ((-90.0, latitude + 45.0), 2309696, 1442022), 
-    ((-90.0, latitude - 90.0), 2309696, -1195859),
-    ((90.0, latitude + 45.0), -2046480, 1442022),
-    ((90.0, latitude - 90.0), -2046480, -1195859)
+    ((-69.997, -14.565), 1853086, 1299012), 
+    ((70.912, -10.56),  -1582589, 1355807),
+    ((-2.389, 30.733), 194421, 2166675),
+    ((3.023, -83.108), 110055, -309384)
 ]
 
 # Extract HA, Dec, and Encoder values for interpolation
@@ -45,7 +52,7 @@ def ra_dec_to_encoders(ra, dec, lst):
 # Example usage
 if __name__ == "__main__":
     
-    observation_time = Time.now()#"2024-10-21T22:00:00"  # Example observation time (UTC)
+    observation_time = Time.now()#Time("2024-10-23T18:07:18")#  # Example observation time (UTC)
     print(observation_time)
     
     lst = observation_time.sidereal_time('mean', longitude=longitude).deg #in degrees
