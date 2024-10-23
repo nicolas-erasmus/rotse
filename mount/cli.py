@@ -61,8 +61,8 @@ def display_menu():
             
             # Convert to degrees
             coords = SkyCoord(ra, dec,unit=(u.hourangle, u.deg))
-            ra_in_deg = coords.to_string().split()[0]
-            dec_in_deg = coords.to_string().split()[1]
+            ra_in_deg = float(coords.to_string().split()[0])
+            dec_in_deg = float(coords.to_string().split()[1])
             print(f"RA_deg = {ra_in_deg}, Dec_deg = {dec_in_deg}")
             
             
@@ -72,11 +72,11 @@ def display_menu():
             lst = observation_time.sidereal_time('mean', longitude=longitude)
             print(f"Local Sidereal Time: {lst}")
             
-            lst_in_deg = lst.deg.to_string()
+            lst_in_deg = float(lst.deg)
             print(f"Local Sidereal Time in degrees: {lst_in_deg}")
             
             # Convert RA/Dec to encoder values
-            encoder_x_val, encoder_y_val = ra_dec_to_encoders(ra_in_deg, dec_in_deg, lst)
+            encoder_x_val, encoder_y_val = ra_dec_to_encoders(ra_in_deg, dec_in_deg, lst_in_deg)
             if encoder_x_val is not None and encoder_y_val is not None:
                 # Send goto RA/DEC commands
                 goto_ra_dec(encoder_x_val, encoder_y_val)
