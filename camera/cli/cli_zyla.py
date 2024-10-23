@@ -61,7 +61,7 @@ def _binning_string_to_tuple(bin):
 def save_image_as_fits(image_data):
     # Generate directory and file name based on current date and time
     date_str = datetime.now().strftime("%Y%m%d")
-    base_dir = f"/data/{date_str}"
+    base_dir = os.getcwd()+f"/data/{date_str}"
     if not os.path.exists(base_dir):
         os.makedirs(base_dir)
 
